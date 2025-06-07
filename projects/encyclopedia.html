@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title id="page-title">Енціалопедія</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --color-bg-light: #f6f8fa;
+      --color-text-light: #1a1a1a;
+      --color-bg-dark: #181a1b;
+      --color-text-dark: #f6f8fa;
+      --color-primary: #2563eb;
+      --color-border: #e0e0e0;
+      --color-modal-bg: rgba(0,0,0,0.6);
+      --color-modal-light: #fff;
+      --color-modal-dark: #23272f;
+      --header-height: 110px;
+      --footer-height: 48px;
+    }
+    html, body {height: 100%;margin: 0;padding: 0;}
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: var(--color-bg-light);
+      color: var(--color-text-light);
+      min-height: 100vh;
+      transition: background 0.3s, color 0.3s;
+      height: 100vh;
+      overflow: hidden;
+    }
+    body.dark {background: var(--color-bg-dark);color: var(--color-text-dark);}
+    .header {position: fixed;top: 0;left: 0;width: 100vw;height: var(--header-height);background: #fff;color: var(--color-primary);display: flex;flex-direction: column;align-items: stretch;justify-content: flex-start;box-shadow: 0 2px 8px rgba(0,0,0,0.07);z-index: 100;transition: background 0.3s, color 0.3s;}
+    body.dark .header {background: #23272f;color: var(--color-text-dark);}
+    .header-top {display: flex;align-items: center;justify-content: space-between;padding: 0 24px;height: 60px;}
+    .header-title {font-size: 1.3em;font-weight: 700;letter-spacing: 1.5px;}
+    .header-controls {display: flex;gap: 8px;}
+    .theme-toggle, .lang-toggle {background: none;border: 1px solid var(--color-border);border-radius: 6px;padding: 7px 14px;font-size: 1em;cursor: pointer;color: inherit;transition: background 0.2s, border 0.2s;}
+    .theme-toggle:hover, .lang-toggle:hover {background: var(--color-primary);color: #fff;border-color: var(--color-primary);}
+    .header-searchbar {display: flex;justify-content: center;align-items: flex-end;padding: 0 24px 10px 24px;flex: 1 0 0;}
+    .search-bar {width: 100%;max-width: 440px;position: relative;margin: 0;display: flex;align-items: center;}
+    .search-bar input[type="text"] {width: 100%;padding: 10px 44px 10px 12px;font-size: 1.1em;border: 1px solid var(--color-border);border-radius: 6px;outline: none;background: inherit;color: inherit;transition: background 0.2s, color 0.2s;box-sizing: border-box;}
+    .search-bar button {position: absolute;right: 4px;top: 50%;transform: translateY(-50%);height: 32px;width: 32px;border: none;background: var(--color-primary);color: #fff;border-radius: 50%;cursor: pointer;display: flex;align-items: center;justify-content: center;padding: 0;transition: background 0.2s;font-size: 1.2em;}
+    .search-bar button:hover {background: #17426a;}
+    .autocomplete-list {position: absolute;left: 0;right: 0;top: 100%;background: #fff;color: #222;border: 1px solid var(--color-border);border-top: none;z-index: 10;max-height: 220px;overflow-y: auto;border-radius: 0 0 8px 8px;box-shadow: 0 2px 8px rgba(0,0,0,0.08);}
+    body.dark .autocomplete-list {background: #23272f;color: #eee;border-color: #444;}
+    .autocomplete-item {padding: 9px 14px;cursor: pointer;transition: background 0.15s;}
+    .autocomplete-item:hover, .autocomplete-item.active {background: var(--color-primary);color: #fff;}
+    .footer {
+      position: fixed;
+      left: 0; bottom: 0; width: 100vw;
+      height: 48px;
+      background: #fff;
+      color: #888;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1em;
+      box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
+      z-index: 100;
+      transition: background 0.3s, color 0.3s;
+      letter-spacing: 0.02em;
+    }
+    body.dark .footer {background: #23272f;color: #bbb;}
+    .main-content {position: absolute;top: var(--header-height);left: 0;right: 0;bottom: var(--footer-height);overflow-y: auto;padding: 24px 0 0 0;background: transparent;transition: background 0.3s;height: calc(100vh - var(--header-height) - var(--footer-height));}
+    .container {max-width: 700px;margin: 0 auto;background: transparent;border-radius: 12px;padding: 0 16px 32px 16px;min-height: 100%;}
+    .news-section {margin-bottom: 30px;background: #fff;border-radius: 10px;box-shadow: 0 2px 8px rgba(0,0,0,0.04);padding: 18px 18px 10px 18px;transition: background 0.3s, color 0.3s;}
+    body.dark .news-section {background: #23272f;color: var(--color-text-dark);}
+    .news-title {font-size: 1.15em;font-weight: 600;color: var(--color-primary);margin-bottom: 10px;letter-spacing: 1px;}
+    .news-list {list-style: none;padding: 0;margin: 0;}
+    .news-item {margin-bottom: 13px;border-bottom: 1px solid var(--color-border);padding-bottom: 7px;display: flex;align-items: flex-start;gap: 15px;}
+    .news-item:last-child {border-bottom: none;}
+    .news-thumb, .news-thumb-placeholder {width: 70px;height: 70px;object-fit: cover;border-radius: 8px;flex-shrink: 0;display:flex;align-items:center;justify-content:center;background:#f0f0f0;}
+    .news-thumb-placeholder svg {width:36px;height:36px;opacity:0.5;}
+    .news-content {flex:1;min-width:0;}
+    .news-link {color: var(--color-primary);text-decoration: underline;font-weight: 500;transition: color 0.18s;cursor: pointer;}
+    .news-link:hover {color: #17426a;}
+    .news-date {font-size: 0.93em;color: #888;margin-left: 7px;}
+    .news-desc {font-size: 0.97em;margin: 4px 0 7px 0;color: #444;}
+    body.dark .news-desc {color: #ddd;}
+    .show-more-news {display: block;margin: 16px auto 0 auto;padding: 8px 24px;background: var(--color-primary);color: #fff;border: none;border-radius: 6px;font-size: 1em;cursor: pointer;font-weight: 500;transition: background 0.2s;}
+    .show-more-news:hover {background: #17426a;}
+    .result {margin-top: 20px;}
+    .result-item {margin-bottom: 18px;padding-bottom: 10px;border-bottom: 1px solid var(--color-border);}
+    .result-item:last-child {border-bottom: none;}
+    .result-title {font-size: 1.2em;color: var(--color-primary);text-decoration: underline;font-weight: bold;cursor: pointer;transition: color 0.2s;}
+    .result-title:hover {color: #17426a;}
+    .result-snippet {color: inherit;font-size: 1em;}
+    .result-thumb, .result-thumb-placeholder {width: 54px;height: 54px;object-fit: cover;border-radius: 8px;flex-shrink: 0;display:inline-block;vertical-align:middle;background:#f0f0f0;margin-right:12px;}
+    .result-thumb-placeholder svg {width:28px;height:28px;opacity:0.5;margin:13px;}
+    .load-more-btn {display: block;margin: 26px auto 0 auto;padding: 11px 32px;background: var(--color-primary);color: #fff;border: none;border-radius: 6px;font-size: 1.1em;cursor: pointer;font-weight: 500;transition: background 0.2s;box-shadow: 0 2px 8px rgba(0,0,0,0.08);}
+    .load-more-btn:hover {background: #17426a;}
+    .modal, .modal-locale {display: none;position: fixed;z-index: 9999;left: 0;top: 0;width: 100vw;height: 100vh;overflow: auto;background: var(--color-modal-bg);transition: background 0.3s;}
+    .modal-content, .modal-locale-content {background: var(--color-modal-light);margin: 40px auto;padding: 24px 18px 18px 18px;border-radius: 12px;max-width: 420px;max-height: 80vh;overflow-y: auto;position: relative;box-shadow: 0 2px 16px rgba(0,0,0,0.2);animation: modalShow 0.2s;color: #23272f;transition: background 0.3s, color 0.3s;}
+    body.dark .modal-content, body.dark .modal-locale-content {background: var(--color-modal-dark);color: var(--color-text-dark);}
+    @keyframes modalShow {from {transform: translateY(-40px); opacity: 0;}to {transform: translateY(0); opacity: 1;}}
+    .modal-close, .modal-locale-close {position: absolute;right: 16px;top: 14px;font-size: 1.5em;color: #888;cursor: pointer;background: none;border: none;}
+    .modal-title {font-size: 1.12em;color: var(--color-primary);margin-bottom: 11px;font-weight: bold;}
+    .modal-thumb, .modal-thumb-placeholder {width: 100%;border-radius: 8px;object-fit: cover;max-height: 180px;margin-bottom: 12px;display:block;}
+    .modal-thumb-placeholder {height:120px;display:flex;align-items:center;justify-content:center;background:#f0f0f0;}
+    .modal-thumb-placeholder svg {width:48px;height:48px;opacity:0.5;}
+    .modal-desc {font-size: 1em;margin-bottom: 12px;}
+    .modal-source-btn {display: block;width: 100%;padding: 10px 0;background: var(--color-primary);color: #fff;border: none;border-radius: 6px;font-size: 1em;font-weight: 500;cursor: pointer;transition: background 0.2s;}
+    .modal-source-btn:hover {background: #17426a;}
+    .locale-list {list-style:none;padding:0;margin:0;}
+    .locale-item {margin:0 0 8px 0;}
+    .locale-btn {width:100%;padding:10px 0;font-size:1em;border:none;border-radius:6px;background:var(--color-primary);color:#fff;cursor:pointer;transition:background 0.2s;}
+    .locale-btn:hover {background:#17426a;}
+    @media (max-width: 600px) {
+      :root {--header-height: 120px;}
+      .header, .footer {padding: 0 6px;font-size: 0.98em;}
+      .header-top {padding: 0 8px;}
+      .header-searchbar {padding: 0 8px 8px 8px;}
+      .main-content {padding: 10px 0 0 0;}
+      .container {padding: 0 2vw 20vw 2vw;}
+      .modal-content, .modal-locale-content {max-width: 98vw;padding: 10px 2vw 10px 2vw;}
+      .news-thumb, .news-thumb-placeholder {width: 54px;height: 54px;}
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-top">
+      <span class="header-title" id="brand-title">Енціалопедія</span>
+      <div class="header-controls">
+        <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">🌙</button>
+        <button class="lang-toggle" onclick="openLocaleModal()" id="lang-btn">EN</button>
+      </div>
+    </div>
+    <div class="header-searchbar">
+      <form class="search-bar" onsubmit="event.preventDefault(); searchWiki(true);">
+        <input type="text" id="search" autocomplete="off" placeholder="Введіть запит..." oninput="autocompleteWiki();toggleNews();" onkeydown="autocompleteKey(event)">
+        <button type="submit" id="search-btn" title="Пошук">
+          <svg width="19" height="19" viewBox="0 0 20 20" fill="none">
+            <circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="2"/>
+            <line x1="14.2929" y1="14.7071" x2="18" y2="18.4142" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <div id="autocomplete-list" class="autocomplete-list" style="display:none;"></div>
+      </form>
+    </div>
+  </div>
+  <div class="main-content" id="main-content">
+    <div class="container">
+      <div id="news-section" class="news-section" style="display:block;">
+        <div class="news-title" id="news-title">Головні новини</div>
+        <ul class="news-list" id="news-list"></ul>
+        <button class="show-more-news" id="show-more-news" style="display:none;"></button>
+      </div>
+      <div id="results" class="result"></div>
+      <button id="load-more-btn" class="load-more-btn" style="display:none;" onclick="loadMoreResults()"></button>
+    </div>
+  </div>
+  <footer class="footer">
+    <span id="footer-text"></span>
+  </footer>
+  <div id="modal" class="modal" onclick="closeModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeModal(event)">&times;</button>
+      <div id="modal-title" class="modal-title"></div>
+      <div id="modal-thumb-wrap"></div>
+      <div id="modal-desc" class="modal-desc"></div>
+      <button id="modal-source-btn" class="modal-source-btn" style="display:none;"></button>
+    </div>
+  </div>
+  <div id="modal-locale" class="modal-locale" onclick="closeLocaleModal(event)">
+    <div class="modal-locale-content" onclick="event.stopPropagation()">
+      <button class="modal-locale-close" onclick="closeLocaleModal(event)">&times;</button>
+      <div id="locale-modal-title" style="font-size:1.1em;font-weight:600;margin-bottom:12px;">Оберіть мову/країну новин</div>
+      <ul class="locale-list" id="locale-list"></ul>
+    </div>
+  </div>
+  <script>
+    // --- Локалізація, переклад, футер ---
+    const locales = [
+      {code:'uk', name:'UA', title:'Головні новини України', feed:'https://news.google.com/rss?hl=uk&gl=UA&ceid=UA:uk'},
+      {code:'en', name:'US', title:'Top US News', feed:'https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en'},
+      {code:'en-gb', name:'GB', title:'Top UK News', feed:'https://news.google.com/rss?hl=en-GB&gl=GB&ceid=GB:en'},
+      {code:'en-in', name:'IN (EN)', title:'Top India News (English)', feed:'https://news.google.com/rss?hl=en-IN&gl=IN&ceid=IN:en'},
+      {code:'hi', name:'IN (HI)', title:'भारत की खबरें', feed:'https://news.google.com/rss?hl=hi&gl=IN&ceid=IN:hi'},
+      {code:'sv', name:'SE', title:'Sveriges Nyheter', feed:'https://news.google.com/rss?hl=sv&gl=SE&ceid=SE:sv'},
+      {code:'no', name:'NO', title:'Norge Nyheter', feed:'https://news.google.com/rss?hl=no&gl=NO&ceid=NO:no'},
+      {code:'da', name:'DK', title:'Danmark Nyheder', feed:'https://news.google.com/rss?hl=da&gl=DK&ceid=DK:da'},
+      {code:'fi', name:'FI', title:'Suomen Uutiset', feed:'https://news.google.com/rss?hl=fi&gl=FI&ceid=FI:fi'},
+      {code:'de', name:'DE', title:'Top Nachrichten Deutschland', feed:'https://news.google.com/rss?hl=de&gl=DE&ceid=DE:de'},
+      {code:'fr', name:'FR', title:'Actualités France', feed:'https://news.google.com/rss?hl=fr&gl=FR&ceid=FR:fr'},
+      {code:'es', name:'ES', title:'Noticias España', feed:'https://news.google.com/rss?hl=es&gl=ES&ceid=ES:es'},
+      {code:'it', name:'IT', title:'Notizie Italia', feed:'https://news.google.com/rss?hl=it&gl=IT&ceid=IT:it'},
+      {code:'pl', name:'PL', title:'Wiadomości Polska', feed:'https://news.google.com/rss?hl=pl&gl=PL&ceid=PL:pl'},
+      {code:'tr', name:'TR', title:'Türkiye Haberleri', feed:'https://news.google.com/rss?hl=tr&gl=TR&ceid=TR:tr'},
+      {code:'ar', name:'AR', title:'أهم الأخبار العربية', feed:'https://news.google.com/rss?hl=ar&gl=EG&ceid=EG:ar'},
+      {code:'zh', name:'CN', title:'中国新闻', feed:'https://news.google.com/rss?hl=zh-CN&gl=CN&ceid=CN:zh-Hans'},
+      {code:'ja', name:'JP', title:'日本のニュース', feed:'https://news.google.com/rss?hl=ja&gl=JP&ceid=JP:ja'},
+      {code:'ko', name:'KR', title:'대한민국 뉴스', feed:'https://news.google.com/rss?hl=ko&gl=KR&ceid=KR:ko'},
+      {code:'en-au', name:'AU', title:'Top Australia News', feed:'https://news.google.com/rss?hl=en-AU&gl=AU&ceid=AU:en'}
+    ];
+    const translations = {
+      uk: {
+        brand:"Енціалопедія",
+        searchPlaceholder:"Введіть запит...",
+        searchBtn:"Пошук",
+        loadMore:"Завантажити ще",
+        loading:"Завантаження результатів...",
+        noResults:"Нічого не знайдено.",
+        enterQuery:"Введіть запит для пошуку.",
+        loadingArticle:"Завантаження статті...",
+        loadError:"Не вдалося завантажити статтю.",
+        showMoreNews:"Показати ще новини",
+        source:"Перейти до джерела",
+        chooseLocale:"Оберіть мову/країну новин",
+        noImage:"Немає зображення",
+        noNews:"Новини недоступні",
+        title:"Енціалопедія"
+      },
+      en: {
+        brand:"Encyalopedia",
+        searchPlaceholder:"Enter your query...",
+        searchBtn:"Search",
+        loadMore:"Load more",
+        loading:"Loading results...",
+        noResults:"Nothing found.",
+        enterQuery:"Enter a query to search.",
+        loadingArticle:"Loading article...",
+        loadError:"Failed to load article.",
+        showMoreNews:"Show more news",
+        source:"Go to source",
+        chooseLocale:"Choose news language/country",
+        noImage:"No image",
+        noNews:"News unavailable",
+        title:"Encyalopedia"
+      }
+    };
+    let localeIndex = 0;
+    let lang = locales[localeIndex].code;
+    let wikiLang = lang;
+    let searchOffset = 0;
+    let searchQuery = "";
+    let lastSearchTotal = 0;
+    let moreResultsAvailable = false;
+    let newsPage = 1;
+    let newsPerPage = 7;
+    let allNews = [];
+    function getUserLocale() {
+      const navLang = (navigator.languages && navigator.languages.length) ? navigator.languages[0] : navigator.language || navigator.userLanguage;
+      const found = locales.findIndex(lc => navLang.toLowerCase().startsWith(lc.code));
+      return found >= 0 ? found : 0;
+    }
+    function getUserTheme() {
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    function setFooter() {
+      const year = new Date().getFullYear();
+      const isUA = lang.startsWith('uk');
+      document.getElementById('footer-text').textContent =
+        isUA
+          ? `© ${year} Сергій Гордійчук — Всі права захищено`
+          : `© ${year} Serhii Hordiichuk — All rights reserved`;
+    }
+    function applyTranslation() {
+      const tr = translations[lang] || translations['en'];
+      document.getElementById('brand-title').textContent = tr.brand;
+      document.getElementById('search').placeholder = tr.searchPlaceholder;
+      document.getElementById('search-btn').title = tr.searchBtn;
+      document.getElementById('lang-btn').textContent = locales[localeIndex].name;
+      document.getElementById('load-more-btn').textContent = tr.loadMore;
+      document.getElementById('news-title').textContent = locales[localeIndex].title;
+      document.getElementById('show-more-news').textContent = tr.showMoreNews;
+      document.getElementById('locale-modal-title').textContent = tr.chooseLocale;
+      document.title = tr.title || "Енціалопедія";
+      setFooter();
+    }
+    function setLang(newLang, idx) {
+      lang = newLang;
+      wikiLang = newLang.split('-')[0];
+      localeIndex = idx;
+      applyTranslation();
+      loadNews(true);
+      if(document.getElementById('results').innerHTML.trim() !== '') searchWiki(true);
+    }
+    function openLocaleModal() {
+      const modal = document.getElementById('modal-locale');
+      const list = document.getElementById('locale-list');
+      list.innerHTML = '';
+      locales.forEach((loc, idx) => {
+        const li = document.createElement('li');
+        li.className = 'locale-item';
+        li.innerHTML = `<button class="locale-btn" onclick="selectLocale(${idx});">${loc.name} &mdash; ${loc.title}</button>`;
+        list.appendChild(li);
+      });
+      modal.style.display = 'block';
+    }
+    function closeLocaleModal(event) {
+      document.getElementById('modal-locale').style.display = 'none';
+    }
+    function selectLocale(idx) {
+      setLang(locales[idx].code, idx);
+      closeLocaleModal();
+    }
+    function toggleTheme(force) {
+      if(force) {
+        if(force==='dark') document.body.classList.add('dark');
+        else document.body.classList.remove('dark');
+      } else {
+        document.body.classList.toggle('dark');
+      }
+      document.getElementById('theme-btn').textContent =
+        document.body.classList.contains('dark') ? '☀️' : '🌙';
+      localStorage.setItem('ency_theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+    }
+    (function(){
+      localeIndex = getUserLocale();
+      setLang(locales[localeIndex].code, localeIndex);
+      const saved = localStorage.getItem('ency_theme');
+      toggleTheme(saved ? saved : getUserTheme());
+    })();
+    // --- Автозаповнення пошуку ---
+    let autocompleteTimer = null;
+    let autocompleteActive = -1;
+    function autocompleteWiki() {
+      const input = document.getElementById('search');
+      const val = input.value.trim();
+      const list = document.getElementById('autocomplete-list');
+      toggleNews();
+      if (autocompleteTimer) clearTimeout(autocompleteTimer);
+      if (!val) {
+        list.style.display = 'none';
+        list.innerHTML = '';
+        return;
+      }
+      autocompleteTimer = setTimeout(() => {
+        fetch(`https://${wikiLang}.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(val)}&limit=7&namespace=0&format=json&origin=*`)
+          .then(r=>r.json())
+          .then(data => {
+            list.innerHTML = '';
+            autocompleteActive = -1;
+            if (data[1].length === 0) {
+              list.style.display = 'none';
+              return;
+            }
+            data[1].forEach((item, idx) => {
+              const div = document.createElement('div');
+              div.className = 'autocomplete-item';
+              div.innerHTML = item;
+              div.onclick = function() {
+                input.value = item;
+                list.style.display = 'none';
+                searchWiki(true);
+              };
+              list.appendChild(div);
+            });
+            list.style.display = 'block';
+          });
+      }, 200);
+    }
+    function autocompleteKey(event) {
+      const list = document.getElementById('autocomplete-list');
+      const items = list.querySelectorAll('.autocomplete-item');
+      if (!items.length) return;
+      if (event.key === "ArrowDown") {
+        autocompleteActive = (autocompleteActive + 1) % items.length;
+        updateAutocompleteActive(items);
+        event.preventDefault();
+      } else if (event.key === "ArrowUp") {
+        autocompleteActive = (autocompleteActive - 1 + items.length) % items.length;
+        updateAutocompleteActive(items);
+        event.preventDefault();
+      } else if (event.key === "Enter") {
+        if (autocompleteActive >= 0) {
+          items[autocompleteActive].click();
+          event.preventDefault();
+        }
+      }
+    }
+    function updateAutocompleteActive(items) {
+      items.forEach((el,i)=>el.classList.toggle('active', i===autocompleteActive));
+    }
+    document.addEventListener('click', function(e) {
+      if (!document.getElementById('autocomplete-list').contains(e.target) && e.target.id !== 'search') {
+        document.getElementById('autocomplete-list').style.display = 'none';
+      }
+    });
+    // --- Пошук по Вікіпедії ---
+    function searchWiki(reset=true) {
+      const tr = translations[lang] || translations['en'];
+      const query = document.getElementById('search').value.trim();
+      const resultsDiv = document.getElementById('results');
+      toggleNews();
+      if (reset) {
+        resultsDiv.innerHTML = '';
+        searchOffset = 0;
+        searchQuery = query;
+        document.getElementById('load-more-btn').style.display = 'none';
+      }
+      if (!query) {
+        resultsDiv.innerHTML = `<em>${tr.enterQuery}</em>`;
+        toggleNews();
+        return;
+      }
+      if (reset) {
+        resultsDiv.innerHTML = `<em>${tr.loading}</em>`;
+      }
+      const url = `https://${wikiLang}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&utf8=&format=json&origin=*&sroffset=${searchOffset}`;
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          if (reset) resultsDiv.innerHTML = '';
+          if (!data.query || data.query.search.length === 0) {
+            if (reset) resultsDiv.innerHTML = `<strong>${tr.noResults}</strong>`;
+            document.getElementById('load-more-btn').style.display = 'none';
+            return;
+          }
+          lastSearchTotal = data.query.searchinfo.totalhits || 0;
+          data.query.search.forEach(item => {
+            const title = item.title;
+            fetch(`https://${wikiLang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`)
+              .then(r=>r.json())
+              .then(summary=>{
+                let thumb = '';
+                if(summary.thumbnail && summary.thumbnail.source){
+                  thumb = `<img class="result-thumb" src="${summary.thumbnail.source}" alt="">`;
+                } else {
+                  thumb = `<span class="result-thumb-placeholder"><svg viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#ccc"/><path d="M9 23l5-7 4 5 3-4 5 6" stroke="#999" stroke-width="2" fill="none"/><circle cx="13" cy="13" r="3" fill="#bbb"/></svg></span>`;
+                }
+                const div = document.createElement('div');
+                div.className = 'result-item';
+                div.innerHTML = `${thumb}<span class="result-title" onclick="openArticle('${encodeURIComponent(title)}', '${title.replace(/'/g, "\\'")}')">${title}</span><br>
+                  <span class="result-snippet">${item.snippet}...</span>`;
+                resultsDiv.appendChild(div);
+              });
+          });
+          searchOffset += data.query.search.length;
+          moreResultsAvailable = searchOffset < lastSearchTotal;
+          document.getElementById('load-more-btn').style.display = moreResultsAvailable ? 'block' : 'none';
+        })
+        .catch(() => {
+          resultsDiv.innerHTML = `<strong>${tr.loadError}</strong>`;
+          document.getElementById('load-more-btn').style.display = 'none';
+        });
+    }
+    function loadMoreResults() {
+      searchWiki(false);
+    }
+    // --- Модальні вікна для статей і новин ---
+    function openArticle(encodedTitle, displayTitle) {
+      const tr = translations[lang] || translations['en'];
+      const modal = document.getElementById('modal');
+      const modalTitle = document.getElementById('modal-title');
+      const modalThumbWrap = document.getElementById('modal-thumb-wrap');
+      modalTitle.textContent = displayTitle;
+      modalThumbWrap.innerHTML = '';
+      document.getElementById('modal-desc').textContent = '';
+      document.getElementById('modal-source-btn').style.display = 'none';
+      modal.style.display = 'block';
+      fetch(`https://${wikiLang}.wikipedia.org/api/rest_v1/page/summary/${encodedTitle}`)
+        .then(response => response.json())
+        .then(data => {
+          if(data.thumbnail && data.thumbnail.source){
+            modalThumbWrap.innerHTML = `<img class="modal-thumb" src="${data.thumbnail.source}" alt="">`;
+          } else {
+            modalThumbWrap.innerHTML = `<span class="modal-thumb-placeholder"><svg viewBox="0 0 48 48"><rect width="48" height="48" rx="8" fill="#ccc"/><path d="M12 36l8-11 7 8 6-7 9 10" stroke="#999" stroke-width="2" fill="none"/><circle cx="20" cy="20" r="5" fill="#bbb"/></svg></span>`;
+          }
+          document.getElementById('modal-desc').textContent = data.extract || tr.noImage;
+        })
+        .catch(() => {
+          document.getElementById('modal-desc').textContent = tr.loadError;
+        });
+    }
+    function closeModal(event) {
+      document.getElementById('modal').style.display = 'none';
+      document.getElementById('modal-title').textContent = '';
+      document.getElementById('modal-thumb-wrap').innerHTML = '';
+      document.getElementById('modal-desc').textContent = '';
+      document.getElementById('modal-source-btn').style.display = 'none';
+    }
+    document.addEventListener('keydown', function(event) {
+      if (event.key === "Escape") {closeModal();closeLocaleModal();}
+    });
+    // --- Новини ---
+    function toggleNews() {
+      const val = document.getElementById('search').value.trim();
+      document.getElementById('news-section').style.display = val ? 'none' : 'block';
+    }
+    function loadNews(reset) {
+      const tr = translations[lang] || translations['en'];
+      const newsList = document.getElementById('news-list');
+      const showMoreBtn = document.getElementById('show-more-news');
+      newsList.innerHTML = '<li>Loading...</li>';
+      showMoreBtn.style.display = 'none';
+      newsPage = reset ? 1 : newsPage;
+      allNews = reset ? [] : allNews;
+      const feedUrl = locales[localeIndex].feed;
+      fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(feedUrl))
+        .then(response => response.json())
+        .then(data => {
+          if (!data.items || !data.items.length) {
+            newsList.innerHTML = `<li>${tr.noNews}</li>`;
+            return;
+          }
+          if(reset) allNews = data.items;
+          renderNews();
+        })
+        .catch(() => {
+          newsList.innerHTML = `<li>${tr.noNews}</li>`;
+        });
+    }
+    function renderNews() {
+      const tr = translations[lang] || translations['en'];
+      const newsList = document.getElementById('news-list');
+      const showMoreBtn = document.getElementById('show-more-news');
+      newsList.innerHTML = '';
+      const start = 0, end = newsPage * newsPerPage;
+      allNews.slice(start, end).forEach((item, idx) => {
+        const title = item.title;
+        const date = new Date(item.pubDate);
+        const dateStr = date.toLocaleDateString(lang.startsWith('uk') ? 'uk-UA' :
+          lang.startsWith('de') ? 'de-DE' :
+          lang.startsWith('fr') ? 'fr-FR' :
+          lang.startsWith('es') ? 'es-ES' :
+          lang.startsWith('it') ? 'it-IT' :
+          lang.startsWith('pl') ? 'pl-PL' :
+          lang.startsWith('tr') ? 'tr-TR' :
+          lang.startsWith('ar') ? 'ar-EG' :
+          lang.startsWith('zh') ? 'zh-CN' :
+          lang.startsWith('ja') ? 'ja-JP' :
+          lang.startsWith('ko') ? 'ko-KR' :
+          lang.startsWith('hi') ? 'hi-IN' :
+          lang.startsWith('en-gb') ? 'en-GB' :
+          lang.startsWith('en-au') ? 'en-AU' : 'en-US', {day:'2-digit', month:'short'});
+        const desc = item.description.replace(/<img[^>]*>/g,'').replace(/<\/?[^>]+(>|$)/g, "").slice(0, 180) + '...';
+        let img = '';
+        if(item.enclosure && item.enclosure.link) img = item.enclosure.link;
+        else {
+          const m = item.description.match(/<img[^>]+src="([^"]+)"/);
+          if(m) img = m[1];
+        }
+        let thumbHtml = img ? `<img class="news-thumb" src="${img}" alt="" loading="lazy">`
+          : `<span class="news-thumb-placeholder"><svg viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#ccc"/><path d="M9 23l5-7 4 5 3-4 5 6" stroke="#999" stroke-width="2" fill="none"/><circle cx="13" cy="13" r="3" fill="#bbb"/></svg></span>`;
+        const li = document.createElement('li');
+        li.className = 'news-item';
+        li.innerHTML = thumbHtml +
+          `<div class="news-content"><a class="news-link" href="#" onclick="showNewsModal(${idx});return false;">${title}</a>
+          <div class="news-date">${dateStr}</div>
+          <div class="news-desc">${desc}</div></div>`;
+        newsList.appendChild(li);
+      });
+      showMoreBtn.style.display = allNews.length > newsPage * newsPerPage ? 'block' : 'none';
+      showMoreBtn.textContent = tr.showMoreNews;
+    }
+    function showNewsModal(idx) {
+      const tr = translations[lang] || translations['en'];
+      const item = allNews[idx];
+      const modal = document.getElementById('modal');
+      document.getElementById('modal-title').textContent = item.title;
+      let img = '';
+      if(item.enclosure && item.enclosure.link) img = item.enclosure.link;
+      else {
+        const m = item.description.match(/<img[^>]+src="([^"]+)"/);
+        if(m) img = m[1];
+      }
+      const modalThumbWrap = document.getElementById('modal-thumb-wrap');
+      if(img) {
+        modalThumbWrap.innerHTML = `<img class="modal-thumb" src="${img}" alt="">`;
+      } else {
+        modalThumbWrap.innerHTML = `<span class="modal-thumb-placeholder"><svg viewBox="0 0 48 48"><rect width="48" height="48" rx="8" fill="#ccc"/><path d="M12 36l8-11 7 8 6-7 9 10" stroke="#999" stroke-width="2" fill="none"/><circle cx="20" cy="20" r="5" fill="#bbb"/></svg></span>`;
+      }
+      document.getElementById('modal-desc').textContent = item.description.replace(/<img[^>]*>/g,'').replace(/<\/?[^>]+(>|$)/g, "").slice(0, 250) + '...';
+      const btn = document.getElementById('modal-source-btn');
+      btn.textContent = tr.source;
+      btn.style.display = 'block';
+      btn.onclick = () => { window.open(item.link, '_blank'); };
+      modal.style.display = 'block';
+    }
+    document.getElementById('show-more-news').onclick = function() {
+      newsPage++;
+      renderNews();
+    };
+    setLang(locales[localeIndex].code, localeIndex);
+    window.onload = function() {
+      loadNews(true);
+      toggleNews();
+      setFooter();
+    };
+  </script>
+</body>
+</html>
