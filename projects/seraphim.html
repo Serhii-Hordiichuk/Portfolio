@@ -108,14 +108,14 @@
     document.getElementById('year').textContent = new Date().getFullYear();
 
     // === API ключі та конфіг ===
-    const OPENROUTER_API_KEY = "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"; // <-- ВСТАВ СВІЙ OpenRouter ключ!
+    const OPENROUTER_API_KEY = "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";
     const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
-    const AIPIPE_API_KEY = "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImhvcmRpaWNodWtzZXJoaWlAZ21haWwuY29tIn0.l2rq16PFYN2jB048E1hcWm4_B5fy7weXMbZt3_Mc3q8"; // <-- ВСТАВ СВІЙ AI Pipe ключ!
+    const AIPIPE_API_KEY = "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImhvcmRpaWNodWtzZXJoaWlAZ21haWwuY29tIn0.l2rq16PFYN2jB048E1hcWm4_B5fy7weXMbZt3_Mc3q8";
     const AIPIPE_API_URL = "https://aipipe.org/openrouter/v1/chat/completions";
-    const REQUESTY_API_KEY = "sk-hGPs1/BAQcKbGy6LXPO6raQT6lFGqAs18z3C94J1nLtbrO35bLr4jE3j3MkBv3RBDPrRJvMm+6O/swqyF3jBb6Nd5kfjaW6qXk+JQDKOnQs="; // <-- ВСТАВ СВІЙ Requesty ключ!
+    const REQUESTY_API_KEY = "sk-hGPs1/BAQcKbGy6LXPO6raQT6lFGqAs18z3C94J1nLtbrO35bLr4jE3j3MkBv3RBDPrRJvMm+6O/swqyF3jBb6Nd5kfjaW6qXk+JQDKOnQs=";
     const REQUESTY_API_URL = "https://api.requesty.ai/v1/chat/completions";
     const REQUESTY_MODEL = "google/gemini-2.0-flash-thinking-exp-01-21";
-    const MODEL = "google/gemini-2.0-flash-exp:free"; // або інша з OpenRouter
+    const MODEL = "google/gemini-2.0-flash-exp:free";
 
     const translations = {
       en: {
@@ -283,9 +283,9 @@
       }
     };
 
-    // === Fallback: OpenRouter -> AI Pipe -> Requesty ===
+    
     async function sendToAllServices(messages, botMsgDiv) {
-      // 1. OpenRouter
+      
       try {
         let res = await fetch(OPENROUTER_API_URL, {
           method: "POST",
@@ -303,7 +303,7 @@
         return;
       } catch (err) {
         botMsgDiv.textContent = "OpenRouter error, пробую AI Pipe...";
-        // 2. AI Pipe
+        
         try {
           let res = await fetch(AIPIPE_API_URL, {
             method: "POST",
@@ -321,7 +321,7 @@
           return;
         } catch (err2) {
           botMsgDiv.textContent = "AI Pipe error, пробую Requesty...";
-          // 3. Requesty
+          
           try {
             let res = await fetch(REQUESTY_API_URL, {
               method: "POST",
