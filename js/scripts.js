@@ -1,5 +1,63 @@
 const projectsData = [
   {
+  title: {
+    en: "Awesome Hacker Search Engines",
+    uk: "Awesome Hacker Search Engines",
+    fr: "Awesome Hacker Search Engines",
+    de: "Awesome Hacker Search Engines",
+    es: "Awesome Hacker Search Engines",
+    ru: "Awesome Hacker Search Engines",
+    ar: "Awesome Hacker Search Engines",
+    hi: "Awesome Hacker Search Engines",
+    zh: "Awesome Hacker Search Engines",
+    no: "Awesome Hacker Search Engines",
+    sv: "Awesome Hacker Search Engines",
+    da: "Awesome Hacker Search Engines",
+    is: "Awesome Hacker Search Engines",
+    fo: "Awesome Hacker Search Engines",
+    ko: "Awesome Hacker Search Engines",
+    ja: "Awesome Hacker Search Engines"
+  },
+  desc: {
+    en: "Adaptive, multilingual web app for OSINT and cybersecurity. 20+ categories, 250+ resources, instant search, dark/light theme, EN/UA, responsive, no dependencies.",
+    uk: "Адаптивний багатомовний вебдодаток для OSINT і кібербезпеки. 20+ категорій, 250+ інструментів, швидкий пошук, світла/темна тема, EN/UA, адаптивний, без залежностей.",
+    fr: "Application web adaptative et multilingue pour OSINT et cybersécurité. Plus de 20 catégories, 250+ ressources, recherche instantanée, thème sombre/clair, EN/UA, responsive, sans dépendances.",
+    de: "Adaptive, mehrsprachige Web-App für OSINT und Cybersicherheit. Über 20 Kategorien, 250+ Ressourcen, Sofortsuche, Dunkel-/Hellmodus, EN/UA, responsiv, ohne Abhängigkeiten.",
+    es: "Aplicación web adaptativa y multilingüe para OSINT y ciberseguridad. Más de 20 categorías, 250+ recursos, búsqueda instantánea, tema oscuro/claro, EN/UA, adaptable, sin dependencias.",
+    ru: "Адаптивный многоязычный веб-приложение для OSINT и кибербезопасности. 20+ категорий, 250+ инструментов, мгновенный поиск, светлая/тёмная тема, EN/UA, адаптивный, без зависимостей.",
+    ar: "تطبيق ويب متكيف ومتعدد اللغات لـ OSINT والأمن السيبراني. أكثر من 20 فئة، 250+ أداة، بحث فوري، وضع مظلم/فاتح، EN/UA، متجاوب، بدون تبعيات.",
+    hi: "OSINT और साइबर सुरक्षा के लिए अनुकूल, बहुभाषी वेब ऐप। 20+ श्रेणियाँ, 250+ संसाधन, त्वरित खोज, डार्क/लाइट थीम, EN/UA, उत्तरदायी, कोई निर्भरता नहीं।",
+    zh: "适用于 OSINT 和网络安全的自适应多语言 Web 应用。20+ 分类，250+ 资源，极速搜索，暗/亮主题，EN/UA，自适应，无依赖。",
+    no: "Adaptiv, flerspråklig webapp for OSINT og kybersikkerhet. 20+ kategorier, 250+ ressurser, øyeblikkelig søk, mørk/lys-modus, EN/UA, responsiv, ingen avhengigheter.",
+    sv: "Adaptiv, flerspråkig webbapp för OSINT och cybersäkerhet. 20+ kategorier, 250+ resurser, direkt sökning, mörkt/ljust tema, EN/UA, responsiv, inga beroenden.",
+    da: "Adaptiv, flersproget webapp til OSINT og cybersikkerhed. 20+ kategorier, 250+ ressourcer, øjeblikkelig søgning, mørkt/lyst tema, EN/UA, responsiv, ingen afhængigheder.",
+    is: "Aðlögunarhæf, fjöltyngd vefapp fyrir OSINT og öryggi. 20+ flokkar, 250+ úrræði, tafarlaus leit, dökk/létt þema, EN/UA, aðlögunarhæft, engar utanaðkomandi kröfur.",
+    fo: "Adaptivur, fleiri mál webapp til OSINT og kibersikkerhet. 20+ bólkar, 250+ amboð, skjót leiting, myrkt/ljóst tema, EN/UA, responsivt, ongar treytir.",
+    ko: "OSINT 및 사이버보안을 위한 적응형 다국어 웹앱. 20+ 카테고리, 250+ 리소스, 즉시 검색, 다크/라이트 테마, EN/UA, 반응형, 종속성 없음.",
+    ja: "OSINTとサイバーセキュリティ向けの適応型多言語Webアプリ。20以上のカテゴリ、250以上のリソース、即時検索、ダーク/ライトテーマ、EN/UA、レスポンシブ、依存なし。"
+  },
+  file: "projects/awesome-hacker-search.html",
+  btn: {
+    en: "View project",
+    uk: "Переглянути",
+    fr: "Voir",
+    de: "Ansehen",
+    es: "Ver",
+    ru: "Смотреть",
+    ar: "عرض",
+    hi: "देखें",
+    zh: "查看",
+    no: "Vis",
+    sv: "Visa",
+    da: "Se",
+    is: "Skoða",
+    fo: "Síggja",
+    ko: "보기",
+    ja: "見る"
+  }
+},
+
+  {
     title: {
       en: "World Encyclopedia", uk: "Світова енциклопедія", fr: "Encyclopédie mondiale", de: "Welt-Enzyklopädie", es: "Enciclopedia mundial", ru: "Мировая энциклопедия", ar: "الموسوعة العالمية", hi: "विश्वकोश", zh: "世界百科全书", no: "Verdensleksikon", sv: "Världsencyklopedi", da: "Verdensencyklopædi", is: "Heimsalfræðiorðabók", fo: "Heimsalfrøði", ko: "세계 백과사전", ja: "世界百科事典"
     },
