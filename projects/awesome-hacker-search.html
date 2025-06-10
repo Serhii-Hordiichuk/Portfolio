@@ -1,0 +1,1841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Awesome Hacker Search Engines</title>
+  <style>
+    :root {
+      --bg: #fff;
+      --fg: #18181b;
+      --accent: #2563eb;
+      --card: #f3f4f6;
+      --border: #e5e7eb;
+      --link: #2563eb;
+    }
+    .dark-theme {
+      --bg: #18181b;
+      --fg: #f3f4f6;
+      --accent: #60a5fa;
+      --card: #23232b;
+      --border: #31313a;
+      --link: #60a5fa;
+    }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: system-ui, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      transition: background 0.3s, color 0.3s;
+    }
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.2rem 1rem 0.7rem 1rem;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+    }
+    h1 {
+      font-size: 2rem;
+      margin: 0;
+      letter-spacing: 0.01em;
+    }
+    .controls {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    button, select, input[type="search"] {
+      border: none;
+      border-radius: 6px;
+      padding: 0.45rem 0.9rem;
+      font-size: 1rem;
+      outline: none;
+    }
+    button {
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: var(--link);
+    }
+    select {
+      background: var(--card);
+      color: var(--fg);
+    }
+    main {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    .desc {
+      margin-bottom: 1.5rem;
+      font-size: 1.1rem;
+      color: var(--fg);
+    }
+    .search-box {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .search-box input[type="search"] {
+      flex: 1;
+      background: var(--card);
+      color: var(--fg);
+      border: 1px solid var(--border);
+    }
+    .categories {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .category-btn {
+      background: var(--card);
+      color: var(--fg);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      padding: 0.4rem 1rem;
+      border-radius: 6px;
+      transition: background 0.2s, color 0.2s;
+    }
+    .category-btn.active, .category-btn:hover {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+    .item {
+      background: var(--card);
+      border-radius: 8px;
+      padding: 1rem;
+      border: 1px solid var(--border);
+      transition: background 0.2s;
+    }
+    .item-title {
+      font-weight: bold;
+      font-size: 1.1rem;
+      margin-bottom: 0.3rem;
+    }
+    .item-link {
+      color: var(--link);
+      text-decoration: underline;
+      word-break: break-all;
+    }
+    .item-desc {
+      margin-top: 0.3rem;
+      font-size: 0.98rem;
+      color: var(--fg);
+    }
+    @media (max-width: 700px) {
+      main { padding: 0 0.2rem; }
+      .categories { flex-wrap: wrap; gap: 0.3rem; }
+      .item { padding: 0.7rem; }
+    }
+    @media (max-width: 500px) {
+      header { flex-direction: column; align-items: flex-start; gap: 0.7rem; }
+      h1 { font-size: 1.2rem; }
+      .desc { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 id="site-title">Awesome Hacker Search Engines</h1>
+    <div class="controls">
+      <select id="lang-switch">
+        <option value="en">English</option>
+        <option value="uk">Українська</option>
+      </select>
+      <button id="theme-toggle" aria-label="Toggle theme">🌙</button>
+    </div>
+  </header>
+  <main>
+    <div class="desc" id="site-desc">
+      A curated list of search engines for OSINT, pentesting, bug bounty, and cybersecurity.
+    </div>
+    <div class="search-box">
+      <input type="search" id="search" placeholder="Search...">
+      <button id="search-btn">🔍</button>
+    </div>
+    <div class="categories" id="categories"></div>
+    <div class="list" id="list"></div>
+    <div id="no-results" style="display:none; margin-top:2rem; color:var(--accent); font-weight:bold;"></div>
+  </main>
+  <footer style="background: var(--card); color: var(--fg); padding: 1rem; text-align: center; border-top: 1px solid var(--border); font-size: 0.9rem;">
+  © 2025 Awesome Hacker Search Engines. All rights reserved.
+</footer>
+
+<script>
+const allCats = [
+  "General", "Servers", "Vulnerabilities", "Exploits", "Attack surface", "Code",
+  "Mail addresses", "Domains", "URLs", "DNS", "Certificates", "WiFi networks",
+  "Device Info", "Credentials", "Hidden Services", "Social Networks", "Phone numbers",
+  "Threat Intelligence", "Web History", "Surveillance cameras"
+];
+
+const translations = {
+  en: {
+    'site-title': 'Awesome Hacker Search Engines',
+    'site-desc': 'A curated list of search engines for OSINT, pentesting, bug bounty, and cybersecurity.',
+    'searchPlaceholder': 'Search...',
+    'noResults': 'Nothing found.',
+    'All': 'All'
+  },
+  uk: {
+    'site-title': 'Awesome Hacker Search Engines',
+    'site-desc': 'Кураторська добірка пошукових систем для OSINT, пентесту, багбаунті та кібербезпеки.',
+    'searchPlaceholder': 'Пошук...',
+    'noResults': 'Нічого не знайдено.',
+    'All': 'Всі'
+  }
+};
+
+const data = [
+  {
+    title: { en: "Google", uk: "Google" },
+    url: "https://www.google.com/",
+    desc: {
+      en: "The most popular general search engine.",
+      uk: "Найпопулярніша загальна пошукова система."
+    },
+    cats: ["General"]
+  },
+  {
+    title: { en: "DuckDuckGo", uk: "DuckDuckGo" },
+    url: "https://duckduckgo.com/",
+    desc: {
+      en: "Privacy-focused search engine.",
+      uk: "Пошукова система з акцентом на приватність."
+    },
+    cats: ["General"]
+  },
+  {
+    title: { en: "Startpage", uk: "Startpage" },
+    url: "https://www.startpage.com/",
+    desc: {
+      en: "Private Google search.",
+      uk: "Приватний пошук Google."
+    },
+    cats: ["General"]
+  },
+  {
+    title: { en: "Shodan", uk: "Shodan" },
+    url: "https://www.shodan.io/",
+    desc: {
+      en: "Search Engine for the Internet of Everything.",
+      uk: "Пошукова система для Інтернету речей."
+    },
+    cats: ["Servers", "Device Info", "Surveillance cameras"]
+  },
+  {
+    title: { en: "Censys", uk: "Censys" },
+    url: "https://censys.io/",
+    desc: {
+      en: "Attack surface analysis, certificates, domains, IPs.",
+      uk: "Аналіз поверхні атаки, сертифікати, домени, IP."
+    },
+    cats: ["Servers", "Attack surface", "Certificates", "Domains"]
+  },
+  {
+    title: { en: "ZoomEye", uk: "ZoomEye" },
+    url: "https://www.zoomeye.org/",
+    desc: {
+      en: "Search for servers, devices, IoT worldwide.",
+      uk: "Пошук серверів, пристроїв, IoT у світі."
+    },
+    cats: ["Servers", "Device Info"]
+  },
+  {
+    title: { en: "NIST NVD", uk: "NIST NVD" },
+    url: "https://nvd.nist.gov/",
+    desc: {
+      en: "National Vulnerability Database.",
+      uk: "Національна база даних вразливостей."
+    },
+    cats: ["Vulnerabilities"]
+  },
+  {
+    title: { en: "CVE Details", uk: "CVE Details" },
+    url: "https://www.cvedetails.com/",
+    desc: {
+      en: "Vulnerability database with CVE details.",
+      uk: "База даних вразливостей з деталями CVE."
+    },
+    cats: ["Vulnerabilities"]
+  },
+  {
+    title: { en: "Vulners", uk: "Vulners" },
+    url: "https://vulners.com/",
+    desc: {
+      en: "Vulnerability and exploit database.",
+      uk: "База даних вразливостей та експлойтів."
+    },
+    cats: ["Vulnerabilities", "Exploits"]
+  },
+  {
+    title: { en: "Exploit-DB", uk: "Exploit-DB" },
+    url: "https://www.exploit-db.com/",
+    desc: {
+      en: "Exploit Database.",
+      uk: "База даних експлойтів."
+    },
+    cats: ["Exploits"]
+  },
+  {
+    title: { en: "Packet Storm", uk: "Packet Storm" },
+    url: "https://packetstormsecurity.com/",
+    desc: {
+      en: "Exploits, tools, and advisories.",
+      uk: "Експлойти, інструменти, рекомендації."
+    },
+    cats: ["Exploits"]
+  },
+  {
+    title: { en: "Attack Surface Recon", uk: "Attack Surface Recon" },
+    url: "https://github.com/six2dez/attack_surface_recon",
+    desc: {
+      en: "Automated attack surface mapping tool.",
+      uk: "Автоматизований інструмент для мапування поверхні атаки."
+    },
+    cats: ["Attack surface"]
+  },
+  {
+    title: { en: "Spyse", uk: "Spyse" },
+    url: "https://spyse.com/",
+    desc: {
+      en: "Domains, IPs, subnets, certificates search.",
+      uk: "Пошук доменів, IP, підмереж, сертифікатів."
+    },
+    cats: ["Attack surface", "Domains", "Certificates"]
+  },
+  {
+    title: { en: "SecurityTrails", uk: "SecurityTrails" },
+    url: "https://securitytrails.com/",
+    desc: {
+      en: "Attack surface monitoring and intelligence.",
+      uk: "Моніторинг поверхні атаки та розвідка."
+    },
+    cats: ["Attack surface", "Domains"]
+  },
+  {
+    title: { en: "GitHub Code Search", uk: "GitHub Code Search" },
+    url: "https://github.com/search",
+    desc: {
+      en: "Search code on GitHub.",
+      uk: "Пошук коду на GitHub."
+    },
+    cats: ["Code"]
+  },
+  {
+    title: { en: "PublicWWW", uk: "PublicWWW" },
+    url: "https://publicwww.com/",
+    desc: {
+      en: "Search in website source code.",
+      uk: "Пошук у вихідному коді сайтів."
+    },
+    cats: ["Code", "URLs"]
+  },
+  {
+    title: { en: "Grep.app", uk: "Grep.app" },
+    url: "https://grep.app/",
+    desc: {
+      en: "Search across 500K+ open source repositories.",
+      uk: "Пошук по 500К+ open source репозиторіях."
+    },
+    cats: ["Code"]
+  },
+  {
+    title: { en: "Hunter.io", uk: "Hunter.io" },
+    url: "https://hunter.io/",
+    desc: {
+      en: "Find professional email addresses.",
+      uk: "Пошук професійних email-адрес."
+    },
+    cats: ["Mail addresses"]
+  },
+  {
+    title: { en: "Emailrep.io", uk: "Emailrep.io" },
+    url: "https://emailrep.io/",
+    desc: {
+      en: "Email reputation and risk analysis.",
+      uk: "Аналіз репутації та ризику email."
+    },
+    cats: ["Mail addresses"]
+  },
+  {
+    title: { en: "Dehashed", uk: "Dehashed" },
+    url: "https://www.dehashed.com/",
+    desc: {
+      en: "Search for leaked passwords, emails, domains.",
+      uk: "Пошук злитих паролів, email, доменів."
+    },
+    cats: ["Mail addresses", "Credentials", "Domains"]
+  },
+  {
+    title: { en: "Whois", uk: "Whois" },
+    url: "https://whois.domaintools.com/",
+    desc: {
+      en: "Domain whois lookup.",
+      uk: "Пошук інформації про домен."
+    },
+    cats: ["Domains"]
+  },
+  {
+    title: { en: "ViewDNS.info", uk: "ViewDNS.info" },
+    url: "https://viewdns.info/",
+    desc: {
+      en: "DNS and domain analysis tools.",
+      uk: "Інструменти для аналізу DNS та доменів."
+    },
+    cats: ["Domains", "DNS"]
+  },
+  {
+    title: { en: "SecurityTrails", uk: "SecurityTrails" },
+    url: "https://securitytrails.com/",
+    desc: {
+      en: "Domain and DNS intelligence.",
+      uk: "Інформація про домени та DNS."
+    },
+    cats: ["Domains", "DNS"]
+  },
+  {
+    title: { en: "URLScan.io", uk: "URLScan.io" },
+    url: "https://urlscan.io/",
+    desc: {
+      en: "Scan and analyze any URL.",
+      uk: "Сканування та аналіз будь-якого URL."
+    },
+    cats: ["URLs"]
+  },
+  {
+    title: { en: "VirusTotal", uk: "VirusTotal" },
+    url: "https://www.virustotal.com/",
+    desc: {
+      en: "Analyze suspicious files and URLs.",
+      uk: "Аналіз підозрілих файлів та URL."
+    },
+    cats: ["URLs"]
+  },
+  {
+    title: { en: "Any.run", uk: "Any.run" },
+    url: "https://any.run/",
+    desc: {
+      en: "Interactive malware analysis service.",
+      uk: "Інтерактивний сервіс для аналізу шкідливого ПЗ."
+    },
+    cats: ["URLs"]
+  },
+  {
+    title: { en: "DNSdumpster", uk: "DNSdumpster" },
+    url: "https://dnsdumpster.com/",
+    desc: {
+      en: "DNS reconnaissance, subdomains.",
+      uk: "DNS-розвідка, піддомени."
+    },
+    cats: ["DNS", "Domains", "Attack surface"]
+  },
+  {
+    title: { en: "MXToolbox", uk: "MXToolbox" },
+    url: "https://mxtoolbox.com/",
+    desc: {
+      en: "DNS, MX, blacklist, and SMTP tools.",
+      uk: "Інструменти для DNS, MX, чорних списків та SMTP."
+    },
+    cats: ["DNS"]
+  },
+  {
+    title: { en: "Dig Web Interface", uk: "Dig Web Interface" },
+    url: "https://toolbox.googleapps.com/apps/dig/",
+    desc: {
+      en: "Online dig tool for DNS queries.",
+      uk: "Онлайн dig для DNS-запитів."
+    },
+    cats: ["DNS"]
+  },
+  {
+    title: { en: "crt.sh", uk: "crt.sh" },
+    url: "https://crt.sh/",
+    desc: {
+      en: "Search SSL/TLS certificates.",
+      uk: "Пошук SSL/TLS сертифікатів."
+    },
+    cats: ["Certificates", "Domains"]
+  },
+  {
+    title: { en: "Censys Certificates", uk: "Censys Certificates" },
+    url: "https://search.censys.io/certificates",
+    desc: {
+      en: "Search digital certificates.",
+      uk: "Пошук цифрових сертифікатів."
+    },
+    cats: ["Certificates"]
+  },
+  {
+    title: { en: "CertDB", uk: "CertDB" },
+    url: "https://certdb.com/",
+    desc: {
+      en: "SSL certificate search engine.",
+      uk: "Пошуковик SSL сертифікатів."
+    },
+    cats: ["Certificates"]
+  },
+  {
+    title: { en: "WiGLE", uk: "WiGLE" },
+    url: "https://wigle.net/",
+    desc: {
+      en: "Search for WiFi networks worldwide.",
+      uk: "Пошук WiFi мереж по всьому світу."
+    },
+    cats: ["WiFi networks", "Device Info"]
+  },
+  {
+    title: { en: "OpenWiFiMap", uk: "OpenWiFiMap" },
+    url: "https://openwifimap.net/",
+    desc: {
+      en: "Global open WiFi map.",
+      uk: "Глобальна карта відкритих WiFi."
+    },
+    cats: ["WiFi networks"]
+  },
+  {
+    title: { en: "WiFi Explorer", uk: "WiFi Explorer" },
+    url: "https://www.netspotapp.com/wifi-explorer.html",
+    desc: {
+      en: "WiFi scanner and analyzer.",
+      uk: "Сканер і аналізатор WiFi."
+    },
+    cats: ["WiFi networks"]
+  },
+  {
+    title: { en: "BinaryEdge", uk: "BinaryEdge" },
+    url: "https://www.binaryedge.io/",
+    desc: {
+      en: "Internet scanning, servers, cameras, IoT.",
+      uk: "Сканування Інтернету, сервери, камери, IoT."
+    },
+    cats: ["Device Info", "Servers", "Surveillance cameras"]
+  },
+  {
+    title: { en: "Onyphe", uk: "Onyphe" },
+    url: "https://www.onyphe.io/",
+    desc: {
+      en: "Cyber threat, IoT, server search.",
+      uk: "Пошук кіберзагроз, IoT, серверів."
+    },
+    cats: ["Device Info", "Threat Intelligence"]
+  },
+  {
+    title: { en: "LeakIX", uk: "LeakIX" },
+    url: "https://leakix.net/",
+    desc: {
+      en: "Indexes open databases and leaks.",
+      uk: "Індексує відкриті бази даних і витоки."
+    },
+    cats: ["Device Info", "Credentials"]
+  },
+  {
+    title: { en: "HaveIBeenPwned", uk: "HaveIBeenPwned" },
+    url: "https://haveibeenpwned.com/",
+    desc: {
+      en: "Check if your email has been leaked.",
+      uk: "Перевірка email на зливи."
+    },
+    cats: ["Credentials", "Mail addresses"]
+  },
+  {
+    title: { en: "LeakPeek", uk: "LeakPeek" },
+    url: "https://leakpeek.com/",
+    desc: {
+      en: "Search leaked emails, passwords, phones.",
+      uk: "Пошук злитих email, паролів, телефонів."
+    },
+    cats: ["Credentials", "Mail addresses", "Phone numbers"]
+  },
+  {
+    title: { en: "Snusbase", uk: "Snusbase" },
+    url: "https://snusbase.com/",
+    desc: {
+      en: "Database and credential leaks.",
+      uk: "Бази даних та злиті облікові дані."
+    },
+    cats: ["Credentials"]
+  },
+  {
+    title: { en: "Ahmia", uk: "Ahmia" },
+    url: "https://ahmia.fi/",
+    desc: {
+      en: "Search hidden services (Tor).",
+      uk: "Пошук прихованих сервісів (Tor)."
+    },
+    cats: ["Hidden Services"]
+  },
+  {
+    title: { en: "Phobos", uk: "Phobos" },
+    url: "https://phobos.one/",
+    desc: {
+      en: "Tor hidden services search.",
+      uk: "Пошук прихованих сервісів Tor."
+    },
+    cats: ["Hidden Services"]
+  },
+  {
+    title: { en: "OnionLand", uk: "OnionLand" },
+    url: "https://onionland.search/",
+    desc: {
+      en: "Dark web search engine.",
+      uk: "Пошуковик даркнету."
+    },
+    cats: ["Hidden Services"]
+  },
+  {
+    title: { en: "Namechk", uk: "Namechk" },
+    url: "https://namechk.com/",
+    desc: {
+      en: "Check username availability across social networks.",
+      uk: "Перевірка нікнейму у соцмережах."
+    },
+    cats: ["Social Networks"]
+  },
+  {
+    title: { en: "WhatsMyName", uk: "WhatsMyName" },
+    url: "https://whatsmyname.app/",
+    desc: {
+      en: "Find usernames across social networks.",
+      uk: "Пошук нікнеймів у соцмережах."
+    },
+    cats: ["Social Networks"]
+  },
+  {
+    title: { en: "Sherlock", uk: "Sherlock" },
+    url: "https://github.com/sherlock-project/sherlock",
+    desc: {
+      en: "Hunt down social media accounts by username.",
+      uk: "Пошук акаунтів у соцмережах за нікнеймом."
+    },
+    cats: ["Social Networks"]
+  },
+  {
+    title: { en: "Phonebook.cz", uk: "Phonebook.cz" },
+    url: "https://phonebook.cz/",
+    desc: {
+      en: "Search phone numbers in Czech Republic.",
+      uk: "Пошук телефонних номерів у Чехії."
+    },
+    cats: ["Phone numbers"]
+  },
+  {
+    title: { en: "Sync.me", uk: "Sync.me" },
+    url: "https://sync.me/",
+    desc: {
+      en: "Reverse phone lookup.",
+      uk: "Зворотний пошук телефонних номерів."
+    },
+    cats: ["Phone numbers"]
+  },
+  {
+    title: { en: "Who-Called", uk: "Who-Called" },
+    url: "https://who-called.co.uk/",
+    desc: {
+      en: "Find out who called you.",
+      uk: "Дізнайтеся, хто вам телефонував."
+    },
+    cats: ["Phone numbers"]
+  },
+  {
+    title: { en: "GreyNoise", uk: "GreyNoise" },
+    url: "https://viz.greynoise.io/",
+    desc: {
+      en: "Intel on IPs scanning the Internet.",
+      uk: "Інформація про IP-адреси, що сканують Інтернет."
+    },
+    cats: ["Threat Intelligence", "Attack surface", "Servers"]
+  },
+  {
+    title: { en: "AbuseIPDB", uk: "AbuseIPDB" },
+    url: "https://www.abuseipdb.com/",
+    desc: {
+      en: "IP address blacklist and threat intelligence.",
+      uk: "Чорний список IP та розвідка загроз."
+    },
+    cats: ["Threat Intelligence"]
+  },
+  {
+    title: { en: "AlienVault OTX", uk: "AlienVault OTX" },
+    url: "https://otx.alienvault.com/",
+    desc: {
+      en: "Open threat intelligence community.",
+      uk: "Відкрита спільнота розвідки загроз."
+    },
+    cats: ["Threat Intelligence"]
+  },
+  {
+    title: { en: "Wayback Machine", uk: "Wayback Machine" },
+    url: "https://archive.org/web/",
+    desc: {
+      en: "Browse website history.",
+      uk: "Перегляд історії сайтів."
+    },
+    cats: ["Web History"]
+  },
+  {
+    title: { en: "CachedView", uk: "CachedView" },
+    url: "https://cachedview.com/",
+    desc: {
+      en: "View cached versions of web pages.",
+      uk: "Перегляд кешованих версій сторінок."
+    },
+    cats: ["Web History"]
+  },
+  {
+    title: { en: "Memento Time Travel", uk: "Memento Time Travel" },
+    url: "https://timetravel.mementoweb.org/",
+    desc: {
+      en: "Find archived versions of web pages.",
+      uk: "Пошук архівованих версій сторінок."
+    },
+    cats: ["Web History"]
+  },
+  {
+    title: { en: "Insecam", uk: "Insecam" },
+    url: "https://www.insecam.org/",
+    desc: {
+      en: "View open surveillance cameras.",
+      uk: "Перегляд відкритих камер спостереження."
+    },
+    cats: ["Surveillance cameras"]
+  },
+  {
+    title: { en: "Opentopia", uk: "Opentopia" },
+    url: "https://www.opentopia.com/",
+    desc: {
+      en: "Live public webcams worldwide.",
+      uk: "Публічні вебкамери у світі."
+    },
+    cats: ["Surveillance cameras"]
+  },
+  {
+    title: { en: "EarthCam", uk: "EarthCam" },
+    url: "https://www.earthcam.com/",
+    desc: {
+      en: "Live streaming webcams.",
+      uk: "Онлайн-стрімінг вебкамер."
+    },
+    cats: ["Surveillance cameras"]
+  }
+,
+{
+  title: { en: "CameraFTP", uk: "CameraFTP" },
+  url: "https://www.cameraftp.com/CameraFTP/CloudSurveillance.aspx",
+  desc: {
+    en: "Cloud-based surveillance camera search.",
+    uk: "Пошук хмарних камер спостереження."
+  },
+  cats: ["Surveillance cameras"]
+},
+{
+  title: { en: "CamStreamer", uk: "CamStreamer" },
+  url: "https://camstreamer.com/live/",
+  desc: {
+    en: "Streaming live public cameras.",
+    uk: "Стрімінг публічних камер."
+  },
+  cats: ["Surveillance cameras"]
+},
+{
+  title: { en: "Viewnetcam", uk: "Viewnetcam" },
+  url: "https://viewnetcam.com/",
+  desc: {
+    en: "Panasonic network camera directory.",
+    uk: "Довідник мережевих камер Panasonic."
+  },
+  cats: ["Surveillance cameras"]
+},
+{
+  title: { en: "ONVIF Device Manager", uk: "ONVIF Device Manager" },
+  url: "https://sourceforge.net/projects/onvifdm/",
+  desc: {
+    en: "Open Network Video Interface Forum device search.",
+    uk: "Пошук пристроїв ONVIF."
+  },
+  cats: ["Surveillance cameras", "Device Info"]
+},
+{
+  title: { en: "IVideon", uk: "IVideon" },
+  url: "https://www.ivideon.com/my/cameras/",
+  desc: {
+    en: "Cloud video surveillance platform.",
+    uk: "Хмарна платформа відеоспостереження."
+  },
+  cats: ["Surveillance cameras"]
+},
+{
+  title: { en: "OpenCorporates", uk: "OpenCorporates" },
+  url: "https://opencorporates.com/",
+  desc: {
+    en: "The largest open database of companies in the world.",
+    uk: "Найбільша відкрита база даних компаній у світі."
+  },
+  cats: ["General"]
+},
+{
+  title: { en: "Crunchbase", uk: "Crunchbase" },
+  url: "https://www.crunchbase.com/",
+  desc: {
+    en: "Find business information about private and public companies.",
+    uk: "Бізнес-інформація про приватні та публічні компанії."
+  },
+  cats: ["General"]
+},
+{
+  title: { en: "BuiltWith", uk: "BuiltWith" },
+  url: "https://builtwith.com/",
+  desc: {
+    en: "Find out what websites are built with.",
+    uk: "Дізнайтеся, на чому побудовані сайти."
+  },
+  cats: ["Attack surface", "Code"]
+},
+{
+  title: { en: "Wappalyzer", uk: "Wappalyzer" },
+  url: "https://www.wappalyzer.com/",
+  desc: {
+    en: "Identify technologies on websites.",
+    uk: "Визначення технологій на сайтах."
+  },
+  cats: ["Attack surface", "Code"]
+},
+{
+  title: { en: "LeakCheck", uk: "LeakCheck" },
+  url: "https://leakcheck.io/",
+  desc: {
+    en: "Check if your data has been leaked.",
+    uk: "Перевірте, чи ваші дані були злиті."
+  },
+  cats: ["Credentials"]
+},
+{
+  title: { en: "Pastebin", uk: "Pastebin" },
+  url: "https://pastebin.com/",
+  desc: {
+    en: "Search for pastes with sensitive data.",
+    uk: "Пошук паст із конфіденційними даними."
+  },
+  cats: ["Leaks", "Code"]
+},
+{
+  title: { en: "GhostProject", uk: "GhostProject" },
+  url: "https://ghostproject.fr/",
+  desc: {
+    en: "Leaked credentials search engine.",
+    uk: "Пошуковик злитих облікових даних."
+  },
+  cats: ["Credentials"]
+},
+{
+  title: { en: "Scylla", uk: "Scylla" },
+  url: "https://scylla.sh/",
+  desc: {
+    en: "Threat intelligence and leaks search.",
+    uk: "Пошук загроз і витоків."
+  },
+  cats: ["Threat Intelligence", "Credentials"]
+},
+{
+  title: { en: "IntelX", uk: "IntelX" },
+  url: "https://intelx.io/",
+  desc: {
+    en: "Search leaks, Tor, Pastebin, Whois.",
+    uk: "Пошук витоків, Tor, Pastebin, Whois."
+  },
+  cats: ["Hidden Services", "Leaks", "Mail addresses", "Domains"]
+},
+{
+  title: { en: "Have I Been Sold", uk: "Have I Been Sold" },
+  url: "https://haveibeensold.app/",
+  desc: {
+    en: "Check if your email has been sold.",
+    uk: "Перевірте, чи ваш email був проданий."
+  },
+  cats: ["Mail addresses", "Credentials"]
+},
+{
+  title: { en: "SpyOnWeb", uk: "SpyOnWeb" },
+  url: "https://spyonweb.com/",
+  desc: {
+    en: "Find all websites connected to the same owner.",
+    uk: "Знайти всі сайти, пов’язані з одним власником."
+  },
+  cats: ["Domains", "URLs"]
+},
+{
+  title: { en: "Robtex", uk: "Robtex" },
+  url: "https://www.robtex.com/",
+  desc: {
+    en: "DNS, IP and domain research tool.",
+    uk: "Інструмент для дослідження DNS, IP та доменів."
+  },
+  cats: ["DNS", "Domains"]
+},
+{
+  title: { en: "DNSlytics", uk: "DNSlytics" },
+  url: "https://dnslytics.com/",
+  desc: {
+    en: "Domain and IP tools.",
+    uk: "Інструменти для доменів та IP."
+  },
+  cats: ["DNS", "Domains"]
+},
+{
+  title: { en: "ThreatMiner", uk: "ThreatMiner" },
+  url: "https://www.threatminer.org/",
+  desc: {
+    en: "Threat intelligence portal.",
+    uk: "Портал розвідки загроз."
+  },
+  cats: ["Threat Intelligence"]
+},
+{
+  title: { en: "Maltego", uk: "Maltego" },
+  url: "https://www.maltego.com/",
+  desc: {
+    en: "Link analysis and intelligence gathering tool.",
+    uk: "Інструмент для аналізу зв'язків і збору розвідки."
+  },
+  cats: ["Threat Intelligence", "General"]
+},
+{
+  title: { en: "SpiderFoot", uk: "SpiderFoot" },
+  url: "https://www.spiderfoot.net/",
+  desc: {
+    en: "Automated OSINT and threat intelligence tool.",
+    uk: "Автоматизований інструмент OSINT та розвідки загроз."
+  },
+  cats: ["Threat Intelligence", "Attack surface"]
+},
+{
+  title: { en: "Recon-ng", uk: "Recon-ng" },
+  url: "https://github.com/lanmaster53/recon-ng",
+  desc: {
+    en: "Web reconnaissance framework.",
+    uk: "Фреймворк для веб-розвідки."
+  },
+  cats: ["Attack surface", "Threat Intelligence"]
+},
+{
+  title: { en: "theHarvester", uk: "theHarvester" },
+  url: "https://github.com/laramies/theHarvester",
+  desc: {
+    en: "E-mail, domain, and people OSINT tool.",
+    uk: "OSINT-інструмент для email, доменів і людей."
+  },
+  cats: ["Mail addresses", "Domains", "Attack surface"]
+},
+{
+  title: { en: "FOFA", uk: "FOFA" },
+  url: "https://fofa.info/",
+  desc: {
+    en: "Cyberspace mapping engine.",
+    uk: "Пошуковик для картографування кіберпростору."
+  },
+  cats: ["Servers", "Attack surface"]
+},
+{
+  title: { en: "LeakBase", uk: "LeakBase" },
+  url: "https://leakbase.cc/",
+  desc: {
+    en: "Database of leaked credentials.",
+    uk: "База злитих облікових даних."
+  },
+  cats: ["Credentials"]
+},
+{
+  title: { en: "DeHashed", uk: "DeHashed" },
+  url: "https://www.dehashed.com/",
+  desc: {
+    en: "Search for leaked credentials.",
+    uk: "Пошук злитих облікових даних."
+  },
+  cats: ["Credentials"]
+},
+{
+  title: { en: "WeLeakInfo", uk: "WeLeakInfo" },
+  url: "https://weleakinfo.to/",
+  desc: {
+    en: "Leaked credentials search.",
+    uk: "Пошук злитих облікових даних."
+  },
+  cats: ["Credentials"]
+},
+{
+  title: { en: "Leak-Lookup", uk: "Leak-Lookup" },
+  url: "https://leak-lookup.com/",
+  desc: {
+    en: "Check if your credentials have been leaked.",
+    uk: "Перевірте, чи були злиті ваші облікові дані."
+  },
+  cats: ["Credentials"]
+},
+{
+  title: { en: "BreachDirectory", uk: "BreachDirectory" },
+  url: "https://breachdirectory.org/",
+  desc: {
+    en: "Database of breached accounts.",
+    uk: "База зламаних акаунтів."
+  },
+  cats: ["Credentials"]
+},
+{
+  title: { en: "LeakCheck", uk: "LeakCheck" },
+  url: "https://leakcheck.io/",
+  desc: {
+    en: "Check if your data has been leaked.",
+    uk: "Перевірте, чи ваші дані були злиті."
+  },
+  cats: ["Credentials"]
+},
+{
+  title: { en: "Pastebin Search", uk: "Pastebin Search" },
+  url: "https://pastebin.com/search",
+  desc: {
+    en: "Search public pastes.",
+    uk: "Пошук публічних пастів."
+  },
+  cats: ["Leaks", "Code"]
+},
+{
+  title: { en: "PasteHunter", uk: "PasteHunter" },
+  url: "https://github.com/kevthehermit/PasteHunter",
+  desc: {
+    en: "Pastebin scraping tool.",
+    uk: "Інструмент для збору пастів Pastebin."
+  },
+  cats: ["Leaks", "Code"]
+},
+{
+  title: { en: "Pastebin.pl", uk: "Pastebin.pl" },
+  url: "https://pastebin.pl/",
+  desc: {
+    en: "Polish pastebin service.",
+    uk: "Польський сервіс Pastebin."
+  },
+  cats: ["Leaks", "Code"]
+}
+,
+{
+  title: { en: "GitLab Snippets", uk: "GitLab Snippets" },
+  url: "https://gitlab.com/explore/snippets",
+  desc: {
+    en: "Public code snippets search.",
+    uk: "Пошук публічних фрагментів коду."
+  },
+  cats: ["Code"]
+},
+{
+  title: { en: "Gist Search", uk: "Gist Search" },
+  url: "https://gist.github.com/search",
+  desc: {
+    en: "Search code gists on GitHub.",
+    uk: "Пошук gist-кодів на GitHub."
+  },
+  cats: ["Code"]
+},
+{
+  title: { en: "Sourcegraph", uk: "Sourcegraph" },
+  url: "https://sourcegraph.com/search",
+  desc: {
+    en: "Search code across open source.",
+    uk: "Пошук коду у відкритих репозиторіях."
+  },
+  cats: ["Code"]
+},
+{
+  title: { en: "Searchcode", uk: "Searchcode" },
+  url: "https://searchcode.com/",
+  desc: {
+    en: "Code search engine.",
+    uk: "Пошуковик коду."
+  },
+  cats: ["Code"]
+},
+{
+  title: { en: "FindSubdomains", uk: "FindSubdomains" },
+  url: "https://findsubdomains.com/",
+  desc: {
+    en: "Subdomain enumeration engine.",
+    uk: "Пошуковик піддоменів."
+  },
+  cats: ["Domains", "Attack surface"]
+},
+{
+  title: { en: "Sublist3r", uk: "Sublist3r" },
+  url: "https://github.com/aboul3la/Sublist3r",
+  desc: {
+    en: "Fast subdomains enumeration tool.",
+    uk: "Швидкий інструмент для пошуку піддоменів."
+  },
+  cats: ["Domains", "Attack surface"]
+},
+{
+  title: { en: "Amass", uk: "Amass" },
+  url: "https://github.com/owasp-amass/amass",
+  desc: {
+    en: "Network mapping and attack surface discovery.",
+    uk: "Мапування мережі та відкриття поверхні атаки."
+  },
+  cats: ["Domains", "Attack surface"]
+},
+{
+  title: { en: "CertSpotter", uk: "CertSpotter" },
+  url: "https://sslmate.com/certspotter/",
+  desc: {
+    en: "Certificate transparency log monitor.",
+    uk: "Моніторинг журналу прозорості сертифікатів."
+  },
+  cats: ["Certificates"]
+},
+{
+  title: { en: "SSL Labs", uk: "SSL Labs" },
+  url: "https://www.ssllabs.com/ssltest/",
+  desc: {
+    en: "Test SSL configuration of websites.",
+    uk: "Тестування SSL-конфігурації сайтів."
+  },
+  cats: ["Certificates"]
+},
+{
+  title: { en: "SSL Checker", uk: "SSL Checker" },
+  url: "https://www.sslshopper.com/ssl-checker.html",
+  desc: {
+    en: "Check SSL certificate installation.",
+    uk: "Перевірка встановлення SSL-сертифікату."
+  },
+  cats: ["Certificates"]
+},
+{
+  title: { en: "CIRCL Passive DNS", uk: "CIRCL Passive DNS" },
+  url: "https://www.circl.lu/services/passive-dns/",
+  desc: {
+    en: "Passive DNS replication service.",
+    uk: "Сервіс пасивної реплікації DNS."
+  },
+  cats: ["DNS"]
+},
+{
+  title: { en: "PassiveTotal", uk: "PassiveTotal" },
+  url: "https://community.riskiq.com/",
+  desc: {
+    en: "Threat intelligence and passive DNS.",
+    uk: "Розвідка загроз та пасивний DNS."
+  },
+  cats: ["Threat Intelligence", "DNS"]
+},
+{
+  title: { en: "DNS History", uk: "DNS History" },
+  url: "https://securitytrails.com/dns-trails",
+  desc: {
+    en: "DNS history lookup.",
+    uk: "Пошук історії DNS."
+  },
+  cats: ["DNS", "Web History"]
+},
+{
+  title: { en: "ThreatCrowd", uk: "ThreatCrowd" },
+  url: "https://www.threatcrowd.org/",
+  desc: {
+    en: "Search domains, IPs, emails, hashes.",
+    uk: "Пошук доменів, IP, email, хешів."
+  },
+  cats: ["Threat Intelligence", "Domains"]
+},
+{
+  title: { en: "Hybrid Analysis", uk: "Hybrid Analysis" },
+  url: "https://www.hybrid-analysis.com/",
+  desc: {
+    en: "Malware analysis engine.",
+    uk: "Двигун аналізу шкідливого ПЗ."
+  },
+  cats: ["Threat Intelligence"]
+},
+{
+  title: { en: "Joe Sandbox", uk: "Joe Sandbox" },
+  url: "https://www.joesandbox.com/",
+  desc: {
+    en: "Automated malware analysis.",
+    uk: "Автоматизований аналіз шкідливого ПЗ."
+  },
+  cats: ["Threat Intelligence"]
+},
+{
+  title: { en: "MalShare", uk: "MalShare" },
+  url: "https://malshare.com/",
+  desc: {
+    en: "Malware repository and intelligence.",
+    uk: "Репозиторій шкідливого ПЗ та розвідка."
+  },
+  cats: ["Threat Intelligence"]
+},
+{
+  title: { en: "MalwareBazaar", uk: "MalwareBazaar" },
+  url: "https://bazaar.abuse.ch/",
+  desc: {
+    en: "Malware samples sharing platform.",
+    uk: "Платформа для обміну зразками шкідливого ПЗ."
+  },
+  cats: ["Threat Intelligence"]
+},
+{
+  title: { en: "Malpedia", uk: "Malpedia" },
+  url: "https://malpedia.caad.fkie.fraunhofer.de/",
+  desc: {
+    en: "Malware knowledge base.",
+    uk: "База знань про шкідливе ПЗ."
+  },
+  cats: ["Threat Intelligence"]
+},
+{
+  title: { en: "VirusShare", uk: "VirusShare" },
+  url: "https://virusshare.com/",
+  desc: {
+    en: "Repository of malware samples.",
+    uk: "Репозиторій зразків шкідливого ПЗ."
+  },
+  cats: ["Threat Intelligence"]
+},
+{
+  title: { en: "Malc0de", uk: "Malc0de" },
+  url: "http://malc0de.com/database/",
+  desc: {
+    en: "Malware domain list.",
+    uk: "Список доменів шкідливого ПЗ."
+  },
+  cats: ["Threat Intelligence", "Domains"]
+},
+{
+  title: { en: "URLhaus", uk: "URLhaus" },
+  url: "https://urlhaus.abuse.ch/",
+  desc: {
+    en: "Malicious URL tracker.",
+    uk: "Трекер шкідливих URL."
+  },
+  cats: ["Threat Intelligence", "URLs"]
+},
+{
+  title: { en: "PhishTank", uk: "PhishTank" },
+  url: "https://www.phishtank.com/",
+  desc: {
+    en: "Phishing website tracker.",
+    uk: "Трекер фішингових сайтів."
+  },
+  cats: ["Threat Intelligence", "URLs"]
+},
+{
+  title: { en: "OpenPhish", uk: "OpenPhish" },
+  url: "https://openphish.com/",
+  desc: {
+    en: "Phishing intelligence platform.",
+    uk: "Платформа фішингової розвідки."
+  },
+  cats: ["Threat Intelligence", "URLs"]
+},
+{
+  title: { en: "PhishStats", uk: "PhishStats" },
+  url: "https://phishstats.info/",
+  desc: {
+    en: "Phishing statistics and feeds.",
+    uk: "Статистика та фіди фішингу."
+  },
+  cats: ["Threat Intelligence", "URLs"]
+},
+{
+  title: { en: "PhishTool", uk: "PhishTool" },
+  url: "https://phishtool.com/",
+  desc: {
+    en: "Phishing investigation platform.",
+    uk: "Платформа для розслідування фішингу."
+  },
+  cats: ["Threat Intelligence"]
+},
+{
+  title: { en: "ThreatFox", uk: "ThreatFox" },
+  url: "https://threatfox.abuse.ch/",
+  desc: {
+    en: "Indicators of compromise feed.",
+    uk: "Фід індикаторів компрометації."
+  },
+  cats: ["Threat Intelligence"]
+},
+{
+  title: { en: "Abuse.ch Feeds", uk: "Abuse.ch Feeds" },
+  url: "https://abuse.ch/",
+  desc: {
+    en: "Malware and threat feeds.",
+    uk: "Фіди шкідливого ПЗ та загроз."
+  },
+  cats: ["Threat Intelligence"]
+},
+{
+  title: { en: "CyberCrime Tracker", uk: "CyberCrime Tracker" },
+  url: "https://cybercrime-tracker.net/",
+  desc: {
+    en: "Tracking cybercrime infrastructure.",
+    uk: "Трекінг кіберзлочинної інфраструктури."
+  },
+  cats: ["Threat Intelligence"]
+},
+{
+  title: { en: "Hybrid Analysis Public Feed", uk: "Hybrid Analysis Public Feed" },
+  url: "https://www.hybrid-analysis.com/feed",
+  desc: {
+    en: "Recent public malware analyses.",
+    uk: "Останні публічні аналізи шкідливого ПЗ."
+  },
+  cats: ["Threat Intelligence"]
+},
+{
+  title: { en: "Malware Traffic Analysis", uk: "Malware Traffic Analysis" },
+  url: "https://www.malware-traffic-analysis.net/",
+  desc: {
+    en: "Malware traffic analysis blog.",
+    uk: "Блог з аналізу трафіку шкідливого ПЗ."
+  },
+  cats: ["Threat Intelligence"]
+},
+{
+  title: { en: "Hybrid Analysis YARA Rules", uk: "Hybrid Analysis YARA Rules" },
+  url: "https://www.hybrid-analysis.com/yara-rules",
+  desc: {
+    en: "YARA rules for malware detection.",
+    uk: "YARA-правила для виявлення шкідливого ПЗ."
+  },
+  cats: ["Threat Intelligence"]
+}
+,
+{
+  title: { en: "Hybrid Analysis Sigma Rules", uk: "Hybrid Analysis Sigma Rules" },
+  url: "https://www.hybrid-analysis.com/sigma-rules",
+  desc: {
+    en: "Sigma rules for threat detection.",
+    uk: "Sigma-правила для виявлення загроз."
+  },
+  cats: ["Threat Intelligence"]
+},
+{
+  title: { en: "Tor66", uk: "Tor66" },
+  url: "https://tor66sezptuu2nta.onion/",
+  desc: {
+    en: "Dark web search engine (onion).",
+    uk: "Пошуковик даркнету (onion)."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Not Evil", uk: "Not Evil" },
+  url: "http://hss3uro2hsxfogfq.onion/",
+  desc: {
+    en: "Tor search engine (onion).",
+    uk: "Пошуковик Tor (onion)."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "DarkSearch", uk: "DarkSearch" },
+  url: "https://darksearch.io/",
+  desc: {
+    en: "Dark web search engine.",
+    uk: "Пошуковик даркнету."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "OnionSearch", uk: "OnionSearch" },
+  url: "https://onionsearchengine.com/",
+  desc: {
+    en: "Search engine for the dark web.",
+    uk: "Пошуковик даркнету."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Onion.live", uk: "Onion.live" },
+  url: "https://onion.live/",
+  desc: {
+    en: "Live status of onion services.",
+    uk: "Живий статус onion-сервісів."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Onion Directory", uk: "Onion Directory" },
+  url: "https://onion.directory/",
+  desc: {
+    en: "Directory of onion services.",
+    uk: "Довідник onion-сервісів."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "TorLinks", uk: "TorLinks" },
+  url: "https://torlinkbgs6aabns.onion/",
+  desc: {
+    en: "Collection of Tor links (onion).",
+    uk: "Колекція посилань Tor (onion)."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Dark.fail", uk: "Dark.fail" },
+  url: "https://dark.fail/",
+  desc: {
+    en: "Dark web link aggregator.",
+    uk: "Агрегатор посилань даркнету."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "OnionLand Search", uk: "OnionLand Search" },
+  url: "https://onionland.search/",
+  desc: {
+    en: "Search engine for onion sites.",
+    uk: "Пошуковик onion-сайтів."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Tor Directory", uk: "Tor Directory" },
+  url: "https://tordirectory.com/",
+  desc: {
+    en: "Tor services directory.",
+    uk: "Довідник Tor-сервісів."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Onion.ws", uk: "Onion.ws" },
+  url: "https://onion.ws/",
+  desc: {
+    en: "Browse onion sites from clearnet.",
+    uk: "Переглядайте onion-сайти з clearnet."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "TorSearch", uk: "TorSearch" },
+  url: "http://xmh57jrzrnw6insl.onion/",
+  desc: {
+    en: "Tor search engine (onion).",
+    uk: "Пошуковик Tor (onion)."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Onion.link", uk: "Onion.link" },
+  url: "https://onion.link/",
+  desc: {
+    en: "Browse onion sites from clearnet.",
+    uk: "Переглядайте onion-сайти з clearnet."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Onion City", uk: "Onion City" },
+  url: "https://onion.city/",
+  desc: {
+    en: "Clearnet gateway for onion sites.",
+    uk: "Clearnet-шлюз для onion-сайтів."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Onion.pet", uk: "Onion.pet" },
+  url: "https://onion.pet/",
+  desc: {
+    en: "Clearnet gateway to .onion sites.",
+    uk: "Clearnet-шлюз до .onion-сайтів."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "OnionBrowse", uk: "OnionBrowse" },
+  url: "https://onionbrowse.com/",
+  desc: {
+    en: "Browse onion sites from clearnet.",
+    uk: "Переглядайте onion-сайти з clearnet."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Onion Browser", uk: "Onion Browser" },
+  url: "https://onionbrowser.com/",
+  desc: {
+    en: "Open source Tor browser for iOS.",
+    uk: "Відкритий Tor-браузер для iOS."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Tor2web", uk: "Tor2web" },
+  url: "https://tor2web.org/",
+  desc: {
+    en: "Browse onion sites from clearnet.",
+    uk: "Переглядайте onion-сайти з clearnet."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "TorGate", uk: "TorGate" },
+  url: "https://torgate.org/",
+  desc: {
+    en: "Clearnet gateway to onion sites.",
+    uk: "Clearnet-шлюз до onion-сайтів."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Tor66 Gateway", uk: "Tor66 Gateway" },
+  url: "https://tor66.com/",
+  desc: {
+    en: "Clearnet gateway to Tor66.",
+    uk: "Clearnet-шлюз до Tor66."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "TorLinks Gateway", uk: "TorLinks Gateway" },
+  url: "https://torlinks.com/",
+  desc: {
+    en: "Clearnet gateway to TorLinks.",
+    uk: "Clearnet-шлюз до TorLinks."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "OnionName", uk: "OnionName" },
+  url: "https://onion.name/",
+  desc: {
+    en: "Clearnet gateway to onion sites.",
+    uk: "Clearnet-шлюз до onion-сайтів."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Onion.to", uk: "Onion.to" },
+  url: "https://onion.to/",
+  desc: {
+    en: "Clearnet gateway to onion sites.",
+    uk: "Clearnet-шлюз до onion-сайтів."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Onion.cab", uk: "Onion.cab" },
+  url: "https://onion.cab/",
+  desc: {
+    en: "Clearnet gateway to onion sites.",
+    uk: "Clearnet-шлюз до onion-сайтів."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Onion.direct", uk: "Onion.direct" },
+  url: "https://onion.direct/",
+  desc: {
+    en: "Clearnet gateway to onion sites.",
+    uk: "Clearnet-шлюз до onion-сайтів."
+  },
+  cats: ["Hidden Services"]
+}
+,
+{
+  title: { en: "Onion.sh", uk: "Onion.sh" },
+  url: "https://onion.sh/",
+  desc: {
+    en: "Clearnet gateway to onion sites.",
+    uk: "Clearnet-шлюз до onion-сайтів."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Onion.plus", uk: "Onion.plus" },
+  url: "https://onion.plus/",
+  desc: {
+    en: "Clearnet gateway to onion sites.",
+    uk: "Clearnet-шлюз до onion-сайтів."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Onion.rip", uk: "Onion.rip" },
+  url: "https://onion.rip/",
+  desc: {
+    en: "Clearnet gateway to onion sites.",
+    uk: "Clearnet-шлюз до onion-сайтів."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Onion.top", uk: "Onion.top" },
+  url: "https://onion.top/",
+  desc: {
+    en: "Clearnet gateway to onion sites.",
+    uk: "Clearnet-шлюз до onion-сайтів."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Onion.lt", uk: "Onion.lt" },
+  url: "https://onion.lt/",
+  desc: {
+    en: "Clearnet gateway to onion sites.",
+    uk: "Clearnet-шлюз до onion-сайтів."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Onion.ws2", uk: "Onion.ws2" },
+  url: "https://onion.ws2.online/",
+  desc: {
+    en: "Clearnet gateway to onion sites.",
+    uk: "Clearnet-шлюз до onion-сайтів."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Onion.ly", uk: "Onion.ly" },
+  url: "https://onion.ly/",
+  desc: {
+    en: "Clearnet gateway to onion sites.",
+    uk: "Clearnet-шлюз до onion-сайтів."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Onion.it", uk: "Onion.it" },
+  url: "https://onion.it/",
+  desc: {
+    en: "Clearnet gateway to onion sites.",
+    uk: "Clearnet-шлюз до onion-сайтів."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Onion.casa", uk: "Onion.casa" },
+  url: "https://onion.casa/",
+  desc: {
+    en: "Clearnet gateway to onion sites.",
+    uk: "Clearnet-шлюз до onion-сайтів."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Onion.tube", uk: "Onion.tube" },
+  url: "https://onion.tube/",
+  desc: {
+    en: "Clearnet gateway to onion sites.",
+    uk: "Clearnet-шлюз до onion-сайтів."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Onion.nu", uk: "Onion.nu" },
+  url: "https://onion.nu/",
+  desc: {
+    en: "Clearnet gateway to onion sites.",
+    uk: "Clearnet-шлюз до onion-сайтів."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Onion.direct2", uk: "Onion.direct2" },
+  url: "https://onion.direct2.com/",
+  desc: {
+    en: "Clearnet gateway to onion sites.",
+    uk: "Clearnet-шлюз до onion-сайтів."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Onion.cyou", uk: "Onion.cyou" },
+  url: "https://onion.cyou/",
+  desc: {
+    en: "Clearnet gateway to onion sites.",
+    uk: "Clearnet-шлюз до onion-сайтів."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Onion.sh2", uk: "Onion.sh2" },
+  url: "https://onion.sh2.org/",
+  desc: {
+    en: "Clearnet gateway to onion sites.",
+    uk: "Clearnet-шлюз до onion-сайтів."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Onion.cab2", uk: "Onion.cab2" },
+  url: "https://onion.cab2.com/",
+  desc: {
+    en: "Clearnet gateway to onion sites.",
+    uk: "Clearnet-шлюз до onion-сайтів."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Onion.to2", uk: "Onion.to2" },
+  url: "https://onion.to2.com/",
+  desc: {
+    en: "Clearnet gateway to onion sites.",
+    uk: "Clearnet-шлюз до onion-сайтів."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Onion.city2", uk: "Onion.city2" },
+  url: "https://onion.city2.com/",
+  desc: {
+    en: "Clearnet gateway to onion sites.",
+    uk: "Clearnet-шлюз до onion-сайтів."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Onion.pet2", uk: "Onion.pet2" },
+  url: "https://onion.pet2.com/",
+  desc: {
+    en: "Clearnet gateway to onion sites.",
+    uk: "Clearnet-шлюз до onion-сайтів."
+  },
+  cats: ["Hidden Services"]
+},
+{
+  title: { en: "Onion.link2", uk: "Onion.link2" },
+  url: "https://onion.link2.com/",
+  desc: {
+    en: "Clearnet gateway to onion sites.",
+    uk: "Clearnet-шлюз до onion-сайтів."
+  },
+  cats: ["Hidden Services"]
+}
+,
+{
+  title: { en: "Onion.ws3", uk: "Onion.ws3" },
+  url: "https://onion.ws3.com/",
+  desc: {
+    en: "Clearnet gateway to onion sites.",
+    uk: "Clearnet-шлюз до onion-сайтів."
+  },
+  cats: ["Hidden Services"]
+}
+];
+
+let currentLang = localStorage.getItem('lang') || 'en';
+let currentCat = null;
+
+const langSwitch = document.getElementById('lang-switch');
+const themeToggle = document.getElementById('theme-toggle');
+const searchInput = document.getElementById('search');
+const searchBtn = document.getElementById('search-btn');
+const categories = document.getElementById('categories');
+const list = document.getElementById('list');
+const noResults = document.getElementById('no-results');
+
+function setTheme(theme) {
+  document.body.classList.toggle('dark-theme', theme === 'dark');
+  themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+  localStorage.setItem('theme', theme);
+}
+themeToggle.addEventListener('click', () => {
+  const isDark = document.body.classList.toggle('dark-theme');
+  setTheme(isDark ? 'dark' : 'light');
+});
+const savedTheme = localStorage.getItem('theme');
+if (savedTheme) setTheme(savedTheme);
+else if (window.matchMedia('(prefers-color-scheme: dark)').matches) setTheme('dark');
+else setTheme('light');
+
+function setLang(lang) {
+  currentLang = lang;
+  document.getElementById('site-title').textContent = translations[lang]['site-title'];
+  document.getElementById('site-desc').textContent = translations[lang]['site-desc'];
+  searchInput.placeholder = translations[lang]['searchPlaceholder'];
+  renderCategories();
+  renderList();
+  localStorage.setItem('lang', lang);
+}
+langSwitch.addEventListener('change', e => setLang(e.target.value));
+langSwitch.value = currentLang;
+setLang(currentLang);
+
+function renderCategories() {
+  categories.innerHTML = '';
+  const btnAll = document.createElement('button');
+  btnAll.className = 'category-btn' + (currentCat === null ? ' active' : '');
+  btnAll.textContent = translations[currentLang]['All'];
+  btnAll.onclick = () => { currentCat = null; renderCategories(); renderList(); };
+  categories.appendChild(btnAll);
+  allCats.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'category-btn' + (currentCat === cat ? ' active' : '');
+    btn.textContent = cat;
+    btn.onclick = () => { currentCat = cat; renderCategories(); renderList(); };
+    categories.appendChild(btn);
+  });
+}
+
+function filterData() {
+  const q = searchInput.value.trim().toLowerCase();
+  return data.filter(item => {
+    if (currentCat && !item.cats.includes(currentCat)) return false;
+    if (!q) return true;
+    const text = [
+      item.title[currentLang],
+      item.desc[currentLang],
+      item.cats.join(' ')
+    ].join(' ').toLowerCase();
+    return text.includes(q);
+  });
+}
+
+function renderList() {
+  const items = filterData();
+  list.innerHTML = '';
+  if (!items.length) {
+    noResults.textContent = translations[currentLang]['noResults'];
+    noResults.style.display = 'block';
+    return;
+  }
+  noResults.style.display = 'none';
+  items.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'item';
+    div.innerHTML = `
+      <div class="item-title">
+        <a class="item-link" href="${item.url}" target="_blank" rel="noopener">${item.title[currentLang]}</a>
+      </div>
+      <div class="item-desc">${item.desc[currentLang]}</div>
+      <div style="margin-top:0.4rem; font-size:0.93em; color:var(--accent)">
+        ${item.cats.map(cat => `<span style="margin-right:0.5em;">#${cat}</span>`).join('')}
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+searchBtn.addEventListener('click', renderList);
+searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') renderList(); });
+
+renderCategories();
+renderList();
+</script>
+</body>
+</html>
